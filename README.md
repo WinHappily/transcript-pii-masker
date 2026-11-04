@@ -95,7 +95,7 @@ transcript-pii-masker/
 | 화면 | `frontend/app.py` | 파일 업로드 / 붙여 넣기 → API 호출 → 원문·결과 좌우 비교, 유형별 그래프, 결과 다운로드 | Streamlit, `requests`, `st.session_state` |
 | 통신 | — | 화면과 서버가 HTTP로 대화. 텍스트는 JSON, 파일은 multipart/form-data | HTTP, REST, JSON |
 | ① 인증 | `app/auth.py` | 헤더 `X-API-Key`를 확인. 없거나 틀리면 401 | FastAPI `Depends` (의존성 주입) |
-| ② 입력 검증 | `app/schemas.py`, `main.py` | 글자 수(1~50,000), 공백만 있는 입력, `threshold` 범위(0~1)를 검사해 422. 파일은 확장자(400) → 크기(413) → "실제 UTF-8 디코딩"(400) 순서로 검사 | Pydantic `Field`, `@field_validator` |
+| ② 입력 검증 | `app/schemas.py`, `main.py` | 글자 수(1\~50,000), 공백만 있는 입력, `threshold` 범위(0\~1)를 검사해 422. 파일은 확장자(400) → 크기(413) → "실제 UTF-8 디코딩"(400) 순서로 검사 | Pydantic `Field`, `@field_validator` |
 | ③ 모델 준비 | `main.py` | 서버를 먼저 열고 모델은 뒤에서 로드. 로딩 중이면 `/health`는 `loading`, 요청은 503 | `lifespan`, `asyncio.create_task` |
 | ④ 비동기 실행 | `main.py` | 무거운 모델 작업을 전용 스레드(일꾼 1명, GPU 1장 기준)에 맡겨 이벤트 루프가 멈추지 않게 함 | `run_in_executor`, `ThreadPoolExecutor` |
 | 줄 나누기 | `model_service.py` | 갤럭시 파일을 줄 단위로 나눠 "발언 줄만" 탐지에 넣고, 타임스탬프·빈 줄은 그대로 보존 | 정규식 `^\d{1,2}:\d{2}(:\d{2})?$` |
@@ -119,7 +119,7 @@ transcript-pii-masker/
 |---|---|---|
 | 완전히 잡음 | "21 / 25" | 16 / 25 |
 | 놓침 | 3 (기관명 2, 한글 전화번호) | 7 ("주소 전체", 같은 이름 반복 등) |
-| 확신도 | 거의 전부 0.97~1.00 | 0.51~0.99로 들쭉날쭉 |
+| 확신도 | 거의 전부 0.97\~1.00 | 0.51\~0.99로 들쭉날쭉 |
 | 라이선스 | MIT | 명시 없음 |
 
 채택한 모델은 결과를 `'박지' + '영'`처럼 "조각내서" 돌려줬지만(라벨 형식이 pipeline의 기본 묶기 방식과 달라서), 위치 숫자가 정확히 이어져 있어 "후처리 함수(`merge_spans`)로 해결"했습니다. 모델에 없는 "기관명"과 음성 변환 특유의 "한글 숫자 전화번호"는 정규식으로 보완했습니다.
